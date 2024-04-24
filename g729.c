@@ -1,4 +1,5 @@
 #include <emscripten.h>
+//#include <console.h>
 #include <string.h>
 
 #include "typedef.h"
@@ -51,9 +52,18 @@ EMSCRIPTEN_KEEPALIVE void Js_Coder_ld8a(short ana[], short frame, short vad_enab
 EMSCRIPTEN_KEEPALIVE void Js_prm2bits_ld8k(short prm[], short bits[]){
     prm2bits_ld8k(prm, bits);
 }
+EMSCRIPTEN_KEEPALIVE void Js_Init(void){
+  Init_Pre_Process();
+  Init_Coder_ld8a();
+  Set_zero(prm, PRM_SIZE+1);
 
+  /* for G.729B */
+  Init_Cod_cng();
+}
 
 EMSCRIPTEN_KEEPALIVE void Js_Encoder(short input[],short output[]){
+    //emscripten_console_log("Js_Encoder");
+    
     if (frame == 32767) frame = 256;
     else frame++;
     memcpy(new_speech,input,L_FRAME);
