@@ -1,3 +1,4 @@
+
 function loadPcm() {
     var xhr = new XMLHttpRequest();
     // 8k 16bit 1 channel
@@ -8,7 +9,9 @@ function loadPcm() {
         // console.log(pcm);
         var pcmArray = new Int16Array(pcm);
         console.log(pcmArray);
-        encodePcm(pcmArray);
+        // 取160个样本
+        // pcmArray = pcmArray.slice(0, 160);
+        encodePcm(pcmArray.slice(0, 160));
 
     };
     xhr.send();
@@ -17,17 +20,24 @@ function loadPcm() {
 
 
 function encodePcm(pcmArray) {
-
+    window.libg729.onload(()=>{
+        var g729Encoder = new window.libg729.G729Encoder();
+        // var g729Decoder = new window.libg729.G729Decoder();
+        console.log('pcmArray', pcmArray);
+        const encodePcm =  g729Encoder.encode(pcmArray);
+        console.log('encodePcm', encodePcm);
+    })
 }
 
 function decodePcm() {
-
+    window.libg729.onload(()=>{
+        var g729Decoder = new window.libg729.G729Decoder();
+        // var g729Decoder = new window.libg729.G729Decoder();
+        console.log('pcmArray', pcmArray);
+        const encodePcm =  g729Encoder.encode(pcmArray);
+        console.log('encodePcm', encodePcm);
+    })
 }
 
 loadPcm();
 
-window.libg729.onload(()=>{
-    var g729Encoder = new window.libg729.G729Encoder();
-    // var g729Decoder = new window.libg729.G729Decoder();
-
-})
