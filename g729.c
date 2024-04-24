@@ -59,15 +59,17 @@ EMSCRIPTEN_KEEPALIVE void Js_Init(void){
 
   /* for G.729B */
   Init_Cod_cng();
+  frame = 0;
+  count_frame = 0L;
 }
 
 EMSCRIPTEN_KEEPALIVE void Js_Encoder(short input[],short output[]){
     //emscripten_console_log("Js_Encoder");
-    
+    //console.log('Js_Encoder');
     if (frame == 32767) frame = 256;
     else frame++;
-    memcpy(new_speech,input,L_FRAME);
-    Pre_Process(new_speech, L_FRAME*2);
+    memcpy(new_speech,input,L_FRAME*2);
+    Pre_Process(new_speech, L_FRAME);
     Coder_ld8a(prm, frame, vad_enable);
     prm2bits_ld8k( prm, serial);
     nb_words = serial[1] +  (short)2;
