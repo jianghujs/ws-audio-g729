@@ -1,6 +1,8 @@
 #include <emscripten.h>
 
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "typedef.h"
 #include "basic_op.h"
@@ -64,7 +66,7 @@ EMSCRIPTEN_KEEPALIVE void Js_Init(void){
 }
 
 //input 160个字节 output 10个字节
-EMSCRIPTEN_KEEPALIVE void Js_Encoder(short input[],char output[]){
+EMSCRIPTEN_KEEPALIVE void Js_Encoder(short input[],unsigned char output[]){
 
     if (frame == 32767) frame = 256;
     else frame++;
@@ -75,19 +77,22 @@ EMSCRIPTEN_KEEPALIVE void Js_Encoder(short input[],char output[]){
     nb_words = serial[1] +  (short)2;
 
     //bit stream to byte array
-    char tmp = 0;
+    unsigned char tmp = 0;
     int index = 2;
-    int output_index = 0;
+    //int output_index = 0;
     for(int i = 0; i < 10; i++){
+        tmp = 0;
         for(int j = 0; j< 8;j++){
             tmp = tmp >> 1;
+            //printf("xxx = %x,tmp =%d\n",serial[index],tmp);
             if(serial[index] == BIT_1){
                 tmp = tmp | 0x80;
             }
             index++;
         }
-        output[output_index] = tmp;
-        output_index ++;
+        output[i] = tmp;
+        //printf("output %d,%d\n",i,output[i]);
+        //output_index ++;
     }
 
    // memcpy(output,serial,nb_words*2);
@@ -116,23 +121,23 @@ EMSCRIPTEN_KEEPALIVE void Js_Init_Dcoder(void){
 
 
 //input 10个字节，output 160个字节
-EMSCRIPTEN_KEEPALIVE void Js_Decoder(char input[],short output[]){
+EMSCRIPTEN_KEEPALIVE void Js_Decoder(unsigned char input[],short output[]){
     //输入10个字节，需要先转化出来
     Word16 data[81];
     data[0] = 80;
-    int input_index = 0;
+    //int input_index = 0;
     int data_index = 1;
     for(int i = 0; i< 10 ;i++){
         for(int j = 0 ;j<8;j++){
-            if((input[input_index] & 0x01) == 1){
+            if((input[i] & 0x01) == 1){
                 data[data_index] = BIT_1;
             }else{
                 data[data_index] = BIT_0;
             }
-            input[input_index] = input[input_index] >> 1;
+            input[i] = input[i] >> 1;
             data_index ++;
         }
-        input_index ++;
+        //input_index ++;
     }
 
     bits2prm_ld8k(data, de_parm);
