@@ -16,7 +16,7 @@ class G729 {
         Module._Js_Encoder(inputOffset, outputOffset);
         // Module._free(inputOffset);
         // 160 -> 10
-        const output = Module.HEAP8.subarray(outputOffset, outputOffset + data.length);
+        const output = Module.HEAP8.subarray(outputOffset, outputOffset + 10);
 
         return output;
     }
