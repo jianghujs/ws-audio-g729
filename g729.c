@@ -130,8 +130,9 @@ EMSCRIPTEN_KEEPALIVE void Js_Decoder(char input[],short output[]){
                 data[data_index] = BIT_0;
             }
             input[input_index] = input[input_index] >> 1;
+            data_index ++;
         }
-        data_index ++;
+        input_index ++;
     }
 
     bits2prm_ld8k(data, de_parm);
