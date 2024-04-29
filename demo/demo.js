@@ -6,7 +6,7 @@ function loadPcm() {
     xhr.onload = function () {
         var pcm = xhr.response;
         // console.log(pcm);
-        var pcmArray = new Int16Array(pcm);
+        var pcmArray = new Int8Array(pcm);
         // console.log(pcmArray);
         // 取160个样本
         // pcmArray = pcmArray.slice(0, 160);
@@ -32,8 +32,8 @@ function encodePcm(pcmArray) {
         const end = new Date().getTime();
         console.log(`时间损耗：start: ${start}, end: ${end}, time: ${end - start}`);
         console.log('编码后的：encodePcm', encodePcm);
-        const decodePcm = g729.decode(encodePcm);
-        console.log('解码后的：decodePcm', decodePcm);
+        // const decodePcm = g729.decode(encodePcm);
+        // console.log('解码后的：decodePcm', decodePcm);
     })
 }
 

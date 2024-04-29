@@ -7,29 +7,29 @@ class G729 {
 
     encode(data) {
         // input
-        const inputOffset = Module._malloc(data.length * 2);
-        Module.HEAP16.set(data, inputOffset / 2);
+        const inputOffset = Module._malloc(data.length);// length * 2 = byteLength
+        Module.HEAP8.set(data, inputOffset);
 
         // output
-        const outputOffset = Module._malloc(data.length * 2);
+        const outputOffset = Module._malloc(data.length);
 
         Module._Js_Encoder(inputOffset, outputOffset);
         // Module._free(inputOffset);
         // 160 -> 10
-        const output = Module.HEAP16.subarray(outputOffset / 2, outputOffset / 2 + data.length / 16);
+        const output = Module.HEAP8.subarray(outputOffset, outputOffset + data.length);
 
         return output;
     }
 
     decode(data) {
         // input
-        const inputOffset = Module._malloc(data.length * 2);
-        Module.HEAP16.set(data, inputOffset / 2);
+        const inputOffset = Module._malloc(data.length);
+        Module.HEAP8.set(data, inputOffset);
         // output
-        const outputOffset = Module._malloc(data.length * 2);
+        const outputOffset = Module._malloc(data.length);
         Module._Js_Decoder(inputOffset, outputOffset);
         // 10 -> 160
-        const output = Module.HEAP16.subarray(outputOffset / 2, outputOffset / 2 + data.length * 16);
+        const output = Module.HEAP8.subarray(outputOffset, outputOffset + 160);
         return output;
     }
 
@@ -53,4 +53,4 @@ function onload(cb) {
     }
 }
 
-export {G729,onload};
+export {G729, onload};
