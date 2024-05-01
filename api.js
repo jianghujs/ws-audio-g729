@@ -3,6 +3,7 @@ import Module from './g729.js';
 class G729 {
     constructor() {
         Module._Js_Init();
+        Module._Js_Init_Dcoder();
     }
 
     encode(data) {
