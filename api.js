@@ -26,7 +26,7 @@ class G729 {
         const inputOffset = Module._malloc(data.length);
         Module.HEAP8.set(data, inputOffset);
         // output
-        const outputOffset = Module._malloc(data.length);
+        const outputOffset = Module._malloc(160);
         Module._Js_Decoder(inputOffset, outputOffset);
         // 10 -> 160
         const output = Module.HEAP8.subarray(outputOffset, outputOffset + 160);
