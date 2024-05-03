@@ -11,14 +11,12 @@ function loadPcm() {
         // 取160个样本
         // pcmArray = pcmArray.slice(0, 160);
         window.libg729.onload(() => {
-            g729 = new window.libg729.G729();
-
-            // 循环取160个样本
-            for (let i = 0; i < pcmArray.length; i += 160) {
-                encodePcm(pcmArray.slice(i, i + 160));
-            }
+            g729Encoder = new window.libg729.G729Encoder();
+            g729Decoder = new window.libg729.G729Decoder();
+            // 循环取 160个样本
+            encodePcm(pcmArray);
             // encodePcm(pcmArray.slice(0, 160));
-            var allPcm = new Int8Array(0);
+            var allPcm = new Uint8Array(0);
             if (tempPcmList.length > 0) {
                 while (tempPcmList.length > 0) {
                     var tempPcm = tempPcmList.shift();
@@ -35,7 +33,8 @@ function loadPcm() {
     xhr.send();
 }
 
-var g729 = null;
+var g729Encoder = null;
+var g729Decoder = null;
 var tempPcmList = [];
 
 function encodePcm(pcmArray) {
@@ -43,16 +42,12 @@ function encodePcm(pcmArray) {
 }
 
 function _encodePcm(pcmArray) {
-    console.log('需要编码的：pcmArray', pcmArray);
-    const start = new Date().getTime();
-    const encodePcm = g729.encode(pcmArray);
-    const end = new Date().getTime();
-    console.log(`时间损耗：start: ${start}, end: ${end}, time: ${end - start}`);
-    console.log('编码后的：encodePcm', encodePcm);
-    const decodePcm = g729.decode(encodePcm);
-    console.log('解码后的：decodePcm', decodePcm);
-    // 保存起来
-    tempPcmList.push(decodePcm);
+    const tempEncodePcm = g729Encoder.encode(pcmArray);
+    tempEncodePcm.forEach((encodePcm) => {
+        const decodePcm = g729Decoder.decode(encodePcm);
+        // 保存起来
+        tempPcmList.push(decodePcm);
+    })
 }
 
 function decodePcm() {
