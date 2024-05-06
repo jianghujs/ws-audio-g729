@@ -2,44 +2,44 @@ import Module from './g729.js';
 
 
 // 80个采样点 160字节 10ms数据
-class G729 {
-    constructor() {
-        Module._Js_Init();
-        Module._Js_Init_Dcoder();
-    }
-
-    encode(data) {
-        // input
-        const inputOffset = Module._malloc(data.length);// length * 2 = byteLength
-        Module.HEAP8.set(data, inputOffset);
-
-        // output
-        const outputOffset = Module._malloc(data.length);
-
-        Module._Js_Encoder(inputOffset, outputOffset);
-        // Module._free(inputOffset);
-        // 160 -> 10
-        const output = Module.HEAP8.subarray(outputOffset, outputOffset + 10);
-
-        return output;
-    }
-
-    decode(data) {
-        // input
-        const inputOffset = Module._malloc(data.length);
-        Module.HEAP8.set(data, inputOffset);
-        // output
-        const outputOffset = Module._malloc(160);
-        Module._Js_Decoder(inputOffset, outputOffset);
-        // 10 -> 160
-        const output = Module.HEAP8.subarray(outputOffset, outputOffset + 160);
-        return output;
-    }
-
-    destroy() {
-
-    }
-}
+// class G729 {
+//     constructor() {
+//         Module._Js_Init();
+//         Module._Js_Init_Dcoder();
+//     }
+//
+//     encode(data) {
+//         // input
+//         const inputOffset = Module._malloc(data.length);// length * 2 = byteLength
+//         Module.HEAP8.set(data, inputOffset);
+//
+//         // output
+//         const outputOffset = Module._malloc(data.length);
+//
+//         Module._Js_Encoder(inputOffset, outputOffset);
+//         // Module._free(inputOffset);
+//         // 160 -> 10
+//         const output = Module.HEAP8.subarray(outputOffset, outputOffset + 10);
+//
+//         return output;
+//     }
+//
+//     decode(data) {
+//         // input
+//         const inputOffset = Module._malloc(data.length);
+//         Module.HEAP8.set(data, inputOffset);
+//         // output
+//         const outputOffset = Module._malloc(160);
+//         Module._Js_Decoder(inputOffset, outputOffset);
+//         // 10 -> 160
+//         const output = Module.HEAP8.subarray(outputOffset, outputOffset + 160);
+//         return output;
+//     }
+//
+//     destroy() {
+//
+//     }
+// }
 
 
 class G729Encoder {
@@ -80,20 +80,42 @@ class G729Encoder {
 
     /**
      *
-     * @param data Float32Array
+     * @param floatArray
+     * @returns {Int16Array}
      */
-    encode_float(data) {
-        // float32 -> int8
-        const int8Data = new Int8Array(data.byteLength);
-        for (let i = 0; i < data.length; i++) {
-            int8Data[i] = data[i] * 127;
+    float2Int(floatArray) {
+        const intArray = new Int16Array(floatArray.length);
+        for (let i = 0; i < floatArray.length; i++) {
+            let s = floatArray[i];
+            if (s < 0) {
+                s = s * 32768;
+            } else {
+                s = s * 32767;
+            }
+            intArray[i] = Math.floor(s);
         }
-        return this.encode(int8Data);
+        return intArray;
     }
 
+    /**
+     *
+     * @param data float32Array
+     * @returns result Int8Array
+     */
+    encode_float(data) {
+        const intArray = this.float2Int(data);
+        return this.encode_int16(intArray);
+    }
 
-    encode_final(data) {
-        return this.encode_float(data)
+    /**
+     *
+     * @param data int16Array
+     * @returns result Int8Array
+     */
+    encode_int16(data) {
+        // Int16Array -> int8
+        const int8Data = new Int8Array(data.buffer);
+        return this.encode(int8Data);
     }
 
     /**
@@ -104,7 +126,7 @@ class G729Encoder {
      */
     _encode(data) {
         // input
-        const inputOffset = Module._malloc(data.length);// length * 2 = byteLength
+        const inputOffset = Module._malloc(data.length); //
         Module.HEAP8.set(data, inputOffset);
 
         // output
@@ -114,8 +136,9 @@ class G729Encoder {
         // Module._free(inputOffset);
         // 160 -> 10
         const output = Module.HEAP8.subarray(outputOffset, outputOffset + 10);
-
-        return output;
+        const outputData = new Int8Array(output.length);
+        outputData.set(output);
+        return outputData;
     }
 
     destroy() {
@@ -127,6 +150,8 @@ class G729Encoder {
 class G729Decoder {
     constructor() {
         Module._Js_Init_Dcoder();
+        this.lastBuffer = null;
+        this.outputBufferSize = 160;
     }
 
     // 10 -> 160
@@ -139,19 +164,54 @@ class G729Decoder {
         Module._Js_Decoder(inputOffset, outputOffset);
         // 10 -> 160
         const output = Module.HEAP8.subarray(outputOffset, outputOffset + 160);
-        return output;
+        const outputData = new Int8Array(output.length);
+        outputData.set(output);
+        return outputData;
     }
 
     /**
      *
-     * @param data arraybuffer
-     * @returns {Int8Array}
+     * @param intArray int16Array
+     * @returns {Float32Array}
+     */
+    int2Float(intArray) {
+        const floatArray = new Float32Array(intArray.length);
+        for (let i = 0; i < intArray.length; i++) {
+            const sample = intArray[i];
+            if (sample < 0) {
+                floatArray[i] = sample / 32768;
+            } else {
+                floatArray[i] = sample / 32767;
+            }
+            if (floatArray[i] < -1 || floatArray[i] > 1) {
+                console.log("audio overflow");
+            }
+        }
+        return floatArray;
+    }
+
+    /**
+     *
+     * @param data Int8Array
+     * @returns {Int16Array}
+     */
+    decode_int16(data) {
+        const int8Data = new Int8Array(data);
+        const output = this.decode(data);
+        // console.log('output', output);
+        // int8 -> Int16Array 知道 byteOffset
+        return new Int16Array(output.buffer);
+    }
+
+    /**
+     *
+     * @param data Int8Array
+     * @returns {Float32Array}
      */
     decode_float(data) {
-        // arraybuffer -> Int8Array
-        data = new Int8Array(data);
-        // 变成 arraybuffer
-        return this.decode(data);
+        const intArray = this.decode_int16(data);
+        const float32 = this.int2Float(intArray);
+        return float32;
     }
 
     destroy() {
@@ -161,7 +221,7 @@ class G729Decoder {
 
 
 window.libg729 = {
-    G729,
+    // G729,
     onload,
     G729Encoder,
     G729Decoder
@@ -177,4 +237,4 @@ function onload(cb) {
     }
 }
 
-export {G729, onload, G729Encoder, G729Decoder};
+export {onload, G729Encoder, G729Decoder};
