@@ -209,7 +209,9 @@ class G729Decoder {
      * @returns {Float32Array}
      */
     decode_float(data) {
+        // int8 -> int16
         const intArray = this.decode_int16(data);
+        // int16 -> float32
         const float32 = this.int2Float(intArray);
         return float32;
     }

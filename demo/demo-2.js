@@ -26,7 +26,7 @@ function loadPcm() {
                     newPcm.set(tempPcm, allPcm.length);
                     allPcm = newPcm;
                 }
-                // download(allPcm);
+                download(allPcm);
             }
         })
     };
@@ -42,7 +42,7 @@ function encodePcm(pcmArray) {
 }
 
 function _encodePcm(pcmArray) {
-    console.log('pcmArray', pcmArray);
+    // console.log('pcmArray', pcmArray);
     const tempEncodePcm = g729Encoder.encode_int16(pcmArray);
     console.log('tempEncodePcm', tempEncodePcm);
     tempEncodePcm.forEach((encodePcm) => {
